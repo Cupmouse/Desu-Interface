@@ -1,0 +1,5 @@
+# Yarn stuff
+/yarn-error.log
+
+# Node.js stuff
+node_modules
