@@ -1,4 +1,4 @@
-import { web3, Web3 } from 'web3';
+import Web3 from 'web3';
 
 const DEFAULT_PROVIDER_URL = 'http://localhost:8545';
 
@@ -15,7 +15,7 @@ export const initWeb3 = () => {
 
   if (typeof web3 !== 'undefined') {
     // Use provided one
-    localWeb3 = new Web3(localWeb3.currentProvider);
+    localWeb3 = new Web3(web3.currentProvider);
     isProvidedFromGlobal = true;
   } else {
     // If web3 is not prepared, make new and set provider
@@ -34,7 +34,6 @@ export const changeWeb3ProviderURL = (url) => {
 
   // Change a provider of web3
   localWeb3 = new Web3(new Web3.providers.HttpProvider(url));
-  web3 = localWeb3;
 };
 
 const getWeb3 = () => localWeb3;
