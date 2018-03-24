@@ -16,6 +16,8 @@ export const initWeb3 = () => {
   if (typeof web3 !== 'undefined') {
     // Use provided one
     localWeb3 = new Web3(web3.currentProvider);
+    // Copy global default account to local web3
+    localWeb3.defaultAccount = web3.eth.defaultAccount;
     isProvidedFromGlobal = true;
   } else {
     // If web3 is not prepared, make new and set provider

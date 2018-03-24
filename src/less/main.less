@@ -9,3 +9,31 @@ body {
 #app-header {
   background-color: @base-color-1;
 }
+
+.threadlist-wrapper {
+  display: flex;
+}
+
+.threadlist-element {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  margin: 5px;
+  height: 200px;
+  width: 200px;
+}
+
+.threadlist-title {
+  font-weight: bold;
+}
+
+.threadlist-text {
+  flex-grow: 1;
+}
+
+.threadlist-nop {
+  flex-wrap: wrap-reverse;
+  align-self: flex-end;
+
+  font-size: 0.8em;
+}

@@ -39,6 +39,20 @@ export default [
   {
     constant: true,
     inputs: [],
+    name: 'isAlive',
+    outputs: [
+      {
+        name: '_alive',
+        type: 'bool',
+      },
+    ],
+    payable: false,
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
     name: 'getNumberOfThreads',
     outputs: [
       {
@@ -79,6 +93,15 @@ export default [
   },
   {
     constant: false,
+    inputs: [],
+    name: 'bumpThread',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
     inputs: [
       {
         name: 'index',
@@ -99,6 +122,20 @@ export default [
       {
         name: '_owner',
         type: 'address',
+      },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'isLocked',
+    outputs: [
+      {
+        name: '_lock',
+        type: 'bool',
       },
     ],
     payable: false,

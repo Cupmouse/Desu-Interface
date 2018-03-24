@@ -2,7 +2,7 @@ import path from 'path';
 
 export default {
   mode: 'development',
-  entry: './src/app.jsx',
+  entry: ['babel-polyfill', './src/app.jsx'],
   output: {
     path: path.join(__dirname, 'public/js/'),
     publicPath: '/js/',
@@ -10,6 +10,12 @@ export default {
   },
   resolve: {
     extensions: ['.js', '.jsx'],
+  },
+  devServer: {
+    port: 3001,
+    historyApiFallback: {
+      index: 'index.html',
+    },
   },
   module: {
     rules: [
