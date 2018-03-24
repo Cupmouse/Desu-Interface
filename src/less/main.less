@@ -1,23 +1,59 @@
 @base-color-1: red;
 @base-color-2: green;
 @base-color-3: blue;
+@font-color: black;
 
 body {
   margin: 0;
 }
 
-#app-header {
-  background-color: @base-color-1;
+.app-header {
+  padding: 10px;
+}
+
+.view {
+  display: flex;
+  flex-direction: row;
+}
+
+.view-controller {
+  display: flex;
+  flex-direction: column;
+}
+
+.view-controller a {
+  color: @font-color;
+  text-decoration: none;
+}
+
+.view-controller-button {
+  text-align: center;
+  margin: 0.5em 1em;
+  padding: 0.5em;
+
+  background-color: #ddd;
+}
+
+.view-controller-button p {
+  margin-bottom: 0;
+}
+
+.content {
+  padding: 1em 0 0 1em;
 }
 
 .threadlist-wrapper {
+  flex-grow: 1;
+
   display: flex;
+  flex-direction: row;
 }
 
 .threadlist-element {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
+
   margin: 5px;
   height: 200px;
   width: 200px;

@@ -1,9 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Web3 from 'web3';
-import threadABI from '../../contract/threadABI';
-import boardABI from '../../contract/boardABI';
-import getWeb3 from '../../web3integration';
+import { Link } from 'react-router-dom';
+import { faPlus } from '@fortawesome/fontawesome-free-solid';
+
+import { getBoardContractAt, getThreadContractAt } from '../../contract/contract_util';
+import { genPathToThread, genPathToNewThread } from '../../pathgenerator';
+import { propTypeBigNumber } from '../proptypes_util';
+
+import ViewController from '../layout/ViewController';
+
 
 const fitText = (str) => {
   if (str.length > 50 - 3) {
@@ -14,7 +19,7 @@ const fitText = (str) => {
 
 const ThreadElement = props => (
   <div className="threadlist-element">
-    <span className="threadlist-title">{fitText(props.title)}</span>
+    <span className="threadlist-title"><Link to={genPathToThread(props.address)}>{fitText(props.title)}</Link></span>
     <span className="threadlist-text">{fitText(props.text)}</span>
     <span className="threadlist-nop">nop: {props.numberOfPosts.toString()}</span>
   </div>
@@ -22,34 +27,51 @@ const ThreadElement = props => (
 
 
 ThreadElement.propTypes = {
+  address: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  numberOfPosts: PropTypes.instanceOf(Web3.prototype.BigNumber).isRequired,
+  numberOfPosts: propTypeBigNumber.isRequired,
   text: PropTypes.string.isRequired,
 };
 
-export default class ThreadList extends Component {
+export default class ThreadListView extends Component {
   static get propTypes() {
     return {
       match: PropTypes.shape({
         params: PropTypes.shape({
           boardAddress: PropTypes.string.isRequired,
-        }),
+        }).isRequired,
       }).isRequired,
     };
   }
 
-  componentWillMount() {
-    const web3 = getWeb3();
+  constructor(props) {
+    super(props);
 
-    const board = web3.eth.contract(boardABI).at(this.props.match.params.boardAddress);
+    this.controllerElements = {
+      newThread: {
+        link: genPathToNewThread(props.match.params.boardAddress),
+        icon: faPlus,
+        text: 'New Thread',
+      },
+      // admin: {
+      //   text: 'Thread settings',
+      //   pressed: () => {
+      //
+      //   },
+      // },
+    };
+  }
+
+  componentWillMount() {
+    const board = getBoardContractAt(this.props.match.params.boardAddress);
 
     // Get addresses of threads in the board
-    const threadAddresses = board.getThreadArray.call(0, 25, { from: web3.eth.accounts[0] });
+    const threadAddresses = board.getThreadArray.call(0, 25);
     // Abandon unnecessary empty elements from responded array
     const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
 
     Promise.all(threadAddressesTrailed.map(async (threadAddress) => {
-      const thread = web3.eth.contract(threadABI).at(threadAddress);
+      const thread = getThreadContractAt(threadAddress);
       const title = thread.getTitle.call();
       const numberOfPosts = thread.getNumberOfPosts.call();
       const text = thread.getPostText.call(0);
@@ -71,14 +93,18 @@ export default class ThreadList extends Component {
     }
 
     return (
-      <div className="threadlist-wrapper">
-        {this.state.threads.map(thread =>
+      <div className="view">
+        <ViewController elements={this.controllerElements} />
+        <div className="content threadlist-wrapper">
+          {this.state.threads.map(thread =>
             (<ThreadElement
               key={thread.address}
+              address={thread.address}
               title={thread.title}
               numberOfPosts={thread.numberOfPosts}
               text={thread.text}
             />))}
+        </div>
       </div>
     );
   }

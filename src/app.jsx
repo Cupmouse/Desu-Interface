@@ -6,8 +6,7 @@ import Root from './ui/Root';
 
 import './less/main.less';
 
-
 // Initialize web3. Get web3 from environment variable if it is available
 initWeb3();
 
-render(<Root />, document.getElementById('app-wrapper'));
+render(<Root />, document.getElementById('app'));

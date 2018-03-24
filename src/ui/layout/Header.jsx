@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { genPathToBoard } from '../../pathgenerator';
 
 const Header = () => (
-  <header id="app-header">
+  <header className="app-header">
     <nav>
-      <Link to="/0x687c8ec523735736ea7e16c4533d6147294295c6/threads">Wow</Link>
+      <Link to={genPathToBoard('0x314015151f92637ccada40be82de8e348b89cc1c')}>Threads</Link>
     </nav>
   </header>
 );
