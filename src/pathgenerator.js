@@ -22,3 +22,4 @@ export const genPathToThread = threadAddress =>
 
 export const genPathToNewThread = boardAddress =>
   replaceTemplateArgs(PATH_TEMPLATE_BOARD_NEW_THREAD, { boardAddress });
+
