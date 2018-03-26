@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { getThreadContractAt } from '../../contract/contract_util';
-import { propTypeBigNumber } from '../proptypes_util';
 import getWeb3 from '../../web3integration';
+import { getThreadContractAt } from '../../contract/contract_util';
 import { formatBigNumberTimestamp } from '../human_readable_util';
-import ViewController from '../layout/ViewController';
+import { propTypeBigNumber } from '../proptypes_util';
+
 import NewPostForm from '../layout/NewPostForm';
+
 
 const Post = props => (
   <div className="thread-post">
@@ -35,62 +36,88 @@ export default class ThreadView extends Component {
     };
   }
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      newPostText: '',
-    };
-
-    this.onTextChange = this.onTextChange.bind(this);
-    this.onFormSubmit = this.onFormSubmit.bind(this);
-
-  //   this.controllerElements = {
-  //     newPost: {
-  //       link: genPathToNewPost(props.match.params.threadAddress),
-  //     }
-  //   }
-  }
-
   componentWillMount() {
     const thread = getThreadContractAt(this.props.match.params.threadAddress);
 
-    const startFetchingTextIfNOPIsKnown = () => {
-      if (this.state && this.state.posters && this.state.timestamps) {
-        // All things we need are fetched
-
-        // Post number can be differ from one array to another
-        // We use data only we have
-        const smallestNOP = Math.min(
-          this.state.posters.length,
-          this.state.timestamps.length,
-        );
-
-        this.setState({ smallestNOP });
-
-        for (let i = 0; i < smallestNOP; i += 1) {
-          thread.getPostText.call(i, (error, result) => {
-            if (error) {
-              console.error(error);
-              return;
-            }
-
-            let textsCopied;
-            if (!this.state || this.state.texts) {
-              textsCopied = this.state.texts.slice();
-            } else {
-              textsCopied = [];
-            }
-
-            textsCopied[i] = result;
-
-            this.setState({
-              texts: textsCopied,
-            });
-          });
-        }
+    const getAppropriatePostsState = () => {
+      if (!this.state || !this.state.posts) {
+        return [];
       }
+
+      return this.state.posts;
     };
 
+    const serveContractArrayReturn = (error, result, attrName) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const posts = getAppropriatePostsState();
+
+      const newPosts = result[0].slice(0, result[1]).map((elem, index) => {
+        if (typeof posts[index] === 'undefined') {
+          return { [attrName]: elem };
+        }
+
+        // State is immutable, objects in array is not copied using Array.slice()
+        const copied = Object.assign({}, posts[index]);
+
+        // Set attribute
+        copied[attrName] = elem;
+
+        return copied;
+      });
+
+      this.setState({
+        posts: newPosts,
+      });
+    };
+
+    // Number of posts are needed for fetching post's data
+    thread.getNumberOfPosts.call((error, numberOfPosts) => {
+      console.log('got nop');
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      thread.getPosterArray.call(0, numberOfPosts, (error2, postersResult) => {
+        serveContractArrayReturn(error2, postersResult, 'poster');
+      });
+
+      thread.getPostTimestampArray.call(0, numberOfPosts, (error2, timestampsResult) => {
+        serveContractArrayReturn(error2, timestampsResult, 'timestamp');
+      });
+
+      // Get a post's text individually
+      for (let i = 0; i < numberOfPosts; i += 1) {
+        thread.getPostText.call(i, (error2, text) => {
+          if (this.state && this.state.posts) {
+            // Objects inside an array are not going to be copied using Array.slice()
+            const postCopied = Object.assign({}, this.state.posts[i]);
+
+            postCopied.text = text;
+
+            const postsCopied = this.state.posts.slice();
+
+            postsCopied[i] = postCopied;
+
+            this.setState({ posts: postsCopied });
+          } else {
+            const newPosts = [];
+
+            newPosts[i] = { text };
+
+            this.setState({ posts: newPosts });
+          }
+        });
+      }
+
+      // this.state.setState({ numberOfPosts: result });
+    });
+
+    // We can get title if I did not know NOP
     thread.getTitle.call((error, result) => {
       if (error) {
         console.error(error);
@@ -100,33 +127,7 @@ export default class ThreadView extends Component {
       this.setState({ title: result });
     });
 
-    thread.getPosterArray.call(0, 50, (error, result) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      this.setState({
-        posters: result[0].slice(0, result[1]),
-      });
-
-      // Check after set state
-      startFetchingTextIfNOPIsKnown();
-    });
-
-    thread.getPostTimestampArray.call(0, 50, (error, result) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      this.setState({
-        timestamps: result[0].slice(0, result[1]),
-      });
-
-      startFetchingTextIfNOPIsKnown();
-    });
-
+    // Listen to the new post events
     const newPostEvent = thread.NewPost();
 
     newPostEvent.watch((error, event) => {
@@ -148,110 +149,24 @@ export default class ThreadView extends Component {
         }
 
         const newPostsNumber = newPostsNumberBigNum.toNumber();
+        const postsCopied = this.state.posts.slice();
 
-        const [
-          postersCopied,
-          timestampsCopied,
-          textsCopied,
-        ] =
-          [
-            this.state.posters.slice(),
-            this.state.timestamps.slice(),
-            this.state.texts.slice(),
-          ];
+        // TODO Have to get posts if we had skipped one
 
-        [
-          postersCopied[newPostsNumber],
-          timestampsCopied[newPostsNumber],
-          textsCopied[newPostsNumber],
-        ] = result;
+        postsCopied[newPostsNumber] = {
+          poster: result[0],
+          timestamp: result[1],
+          text: result[2],
+        };
 
-
-        // If more than 2 posts are posted in the same block
-        // order of events called is not always the order of posts included in the block (I guess)
-        let afterSmallestNOP = newPostsNumber + 1;
-
-        if (afterSmallestNOP < this.state.smallestNOP) {
-          afterSmallestNOP = this.state.smallestNOP;
-        }
-
-        this.setState({
-          posters: postersCopied,
-          timestamps: timestampsCopied,
-          texts: textsCopied,
-          smallestNOP: afterSmallestNOP,
-        });
+        this.setState({ posts: postsCopied });
       });
     });
-  }
-
-  onTextChange(event) {
-    this.setState({ newPostText: event.target.value });
-  }
-
-  onFormSubmit(event) {
-    event.preventDefault();
-
-    const thread = getThreadContractAt(this.props.match.params.threadAddress);
-
-    thread.post.estimateGas(this.state.newPostText, (error, estimate) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      // Test if it can run without problems on vm
-      thread.post.call(this.state.newPostText, (error2) => {
-        if (error2) {
-          console.error(error2);
-          return;
-        }
-
-        // It can, send real tx
-
-        getWeb3().eth.getAccounts((error3, accounts) => {
-          thread.post(this.state.newPostText, {
-            from: accounts[0],
-            gas: estimate,
-          }, (error4, txHash) => {
-            if (error4) {
-              console.error(error4);
-            } else {
-              console.log(txHash);
-            }
-
-            this.setState({ newPostText: '' });
-          });
-        });
-      });
-    });
-  }
-
-  renderPosts() {
-    console.log('rendering posts');
-    const comp = [];
-
-    for (let i = 0; i < this.state.smallestNOP; i += 1) {
-      const poster = this.state.posters[i];
-      const timestamp = this.state.timestamps[i];
-      // Text could not be there yet
-      const text = (!this.state.texts || this.state.texts[i] == null) ? '' : this.state.texts[i];
-
-      comp.push(<Post
-        key={getWeb3().sha3(i.toString(10).concat(poster).concat(timestamp).concat(text))}
-        number={i}
-        poster={poster}
-        timestamp={timestamp}
-        text={text}
-      />);
-    }
-
-    return comp;
   }
 
   render() {
     console.log('rendering called');
-    if (!this.state || typeof this.state.smallestNOP === 'undefined') {
+    if (!this.state || typeof this.state.posts === 'undefined') {
       return ('loading');
     }
 
@@ -262,14 +177,21 @@ export default class ThreadView extends Component {
         <div className="content thread">
           <p>{title}</p>
           <div className="thread-postlist">
-            {this.renderPosts()}
+            {this.state.posts.map((post, index) => {
+              const poster = post.poster || '';
+              const timestamp = post.timestamp || new (getWeb3()).BigNumber(0);
+              const text = post.text || '';
+
+              return (<Post
+                key={getWeb3().sha3(index.toString(10).concat(poster).concat(timestamp).concat(text))}
+                number={index}
+                poster={poster}
+                timestamp={timestamp}
+                text={text}
+              />);
+            })}
           </div>
-          <div className="new-post-wrapper">
-            <form onSubmit={this.onFormSubmit}>
-              <textarea className="new-post-text" placeholder="Write your thoughts here..." value={this.state.newPostText} onChange={this.onTextChange} />
-              <input type="submit" value="Send" />
-            </form>
-          </div>
+          <NewPostForm threadAddress={this.props.match.params.threadAddress} />
         </div>
       </div>
     );
