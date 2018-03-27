@@ -8,6 +8,7 @@ import { genPathToThread, genPathToNewThread } from '../../pathgenerator';
 import { propTypeBigNumber } from '../proptypes_util';
 
 import ViewController from '../layout/ViewController';
+import { callWeb3Async } from '../../web3integration';
 
 
 const fitText = (str) => {
@@ -66,23 +67,25 @@ export default class ThreadListView extends Component {
     const board = getBoardContractAt(this.props.match.params.boardAddress);
 
     // Get addresses of threads in the board
-    const threadAddresses = board.getThreadArray.call(0, 25);
-    // Abandon unnecessary empty elements from responded array
-    const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
+    callWeb3Async(board.getThreadArray.call, 0, 25).then((threadAddresses) => {
+      // Abandon unnecessary empty elements from responded array
+      const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
 
-    Promise.all(threadAddressesTrailed.map(async (threadAddress) => {
-      const thread = getThreadContractAt(threadAddress);
-      const title = thread.getTitle.call();
-      const numberOfPosts = thread.getNumberOfPosts.call();
-      const text = thread.getPostText.call(0);
+      return Promise.all(threadAddressesTrailed.map(async (threadAddress) => {
+        const thread = getThreadContractAt(threadAddress);
 
-      return {
-        address: threadAddress,
-        title,
-        text,
-        numberOfPosts,
-      };
-    })).then((threads) => {
+        const title = await callWeb3Async(thread.getTitle.call);
+        const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
+        const text = await callWeb3Async(thread.getPostText.call, 0);
+
+        return {
+          address: threadAddress,
+          title,
+          text,
+          numberOfPosts,
+        };
+      }));
+    }).then((threads) => {
       this.setState({ threads });
     });
   }

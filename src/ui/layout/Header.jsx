@@ -5,7 +5,7 @@ import { genPathToBoard } from '../../pathgenerator';
 const Header = () => (
   <header className="app-header">
     <nav>
-      <Link to={genPathToBoard('0x314015151f92637ccada40be82de8e348b89cc1c')}>Threads</Link>
+      <Link to={genPathToBoard('0xf90537eb51122f944e051b54c3bee567b6b048c4')}>Threads</Link>
     </nav>
   </header>
 );

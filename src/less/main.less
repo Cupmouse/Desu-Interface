@@ -45,6 +45,7 @@ body {
 
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 
   padding: 1em 0 0 1em;
 }
@@ -65,6 +66,9 @@ body {
 
 .threadlist-text {
   flex-grow: 1;
+
+  // don't need this
+  white-space: normal;
 }
 
 .threadlist-nop {
@@ -87,7 +91,7 @@ body {
 }
 
 .thread-post {
-
+  white-space: pre-line;
 }
 
 .new-post-text {

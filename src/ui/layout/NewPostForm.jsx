@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { getThreadContractAt } from '../../contract/contract_util';
-import getWeb3 from '../../web3integration';
+import { callWeb3Async } from '../../web3integration';
 
 export default class NewPostForm extends Component {
   static get propTypes() {
@@ -30,35 +30,22 @@ export default class NewPostForm extends Component {
 
     const thread = getThreadContractAt(this.props.threadAddress);
 
-    thread.post.estimateGas(this.state.newPostText, (error, estimate) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
+    // ESLint says use array destruct, it is disgusting but keep this please
+    const { newPostText } = this.state;
+
+    let gasEstimate;
+    callWeb3Async(thread.post.estimateGas, newPostText).then((result) => {
+      gasEstimate = result;
 
       // Test if it can run without problems on vm
-      thread.post.call(this.state.newPostText, (error2) => {
-        if (error2) {
-          console.error(error2);
-          return;
-        }
+      return callWeb3Async(thread.post.call, newPostText);
+    }).then(() => {
+      this.setState({ newPostText: '' });
 
-        // It can, send real tx
-
-        getWeb3().eth.getAccounts((error3, accounts) => {
-          thread.post(this.state.newPostText, {
-            from: accounts[0],
-            gas: estimate,
-          }, (error4, txHash) => {
-            if (error4) {
-              console.error(error4);
-            } else {
-              console.log(txHash);
-            }
-
-            this.setState({ newPostText: '' });
-          });
-        });
+      // It can, send real tx
+      return callWeb3Async(thread.post, newPostText, {
+        // from: account,
+        gas: gasEstimate,
       });
     });
   }

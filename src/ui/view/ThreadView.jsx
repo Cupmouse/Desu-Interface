@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import getWeb3 from '../../web3integration';
+import getWeb3, { callWeb3Async } from '../../web3integration';
 import { getThreadContractAt } from '../../contract/contract_util';
 import { formatBigNumberTimestamp } from '../human_readable_util';
 import { propTypeBigNumber } from '../proptypes_util';
@@ -47,12 +47,7 @@ export default class ThreadView extends Component {
       return this.state.posts;
     };
 
-    const serveContractArrayReturn = (error, result, attrName) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-
+    const serveContractArrayReturn = (result, attrName) => {
       const posts = getAppropriatePostsState();
 
       const newPosts = result[0].slice(0, result[1]).map((elem, index) => {
@@ -75,24 +70,22 @@ export default class ThreadView extends Component {
     };
 
     // Number of posts are needed for fetching post's data
-    thread.getNumberOfPosts.call((error, numberOfPosts) => {
+    callWeb3Async(thread.getNumberOfPosts).then((numberOfPosts) => {
       console.log('got nop');
-      if (error) {
-        console.error(error);
-        return;
-      }
 
-      thread.getPosterArray.call(0, numberOfPosts, (error2, postersResult) => {
-        serveContractArrayReturn(error2, postersResult, 'poster');
+      // this.state.setState({ numberOfPosts: result });
+
+      callWeb3Async(thread.getPosterArray, 0, numberOfPosts).then((postersResult) => {
+        serveContractArrayReturn(postersResult, 'poster');
       });
 
-      thread.getPostTimestampArray.call(0, numberOfPosts, (error2, timestampsResult) => {
-        serveContractArrayReturn(error2, timestampsResult, 'timestamp');
+      callWeb3Async(thread.getPostTimestampArray, 0, numberOfPosts).then((timestampsResult) => {
+        serveContractArrayReturn(timestampsResult, 'timestamp');
       });
 
       // Get a post's text individually
       for (let i = 0; i < numberOfPosts; i += 1) {
-        thread.getPostText.call(i, (error2, text) => {
+        callWeb3Async(thread.getPostText, i).then((text) => {
           if (this.state && this.state.posts) {
             // Objects inside an array are not going to be copied using Array.slice()
             const postCopied = Object.assign({}, this.state.posts[i]);
@@ -113,19 +106,10 @@ export default class ThreadView extends Component {
           }
         });
       }
-
-      // this.state.setState({ numberOfPosts: result });
     });
 
     // We can get title if I did not know NOP
-    thread.getTitle.call((error, result) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      this.setState({ title: result });
-    });
+    callWeb3Async(thread.getTitle).then(title => this.setState({ title }));
 
     // Listen to the new post events
     const newPostEvent = thread.NewPost();
