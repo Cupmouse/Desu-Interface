@@ -146,6 +146,14 @@ export default class ThreadView extends Component {
         this.setState({ posts: postsCopied });
       });
     });
+
+    this.setState({ newPostEvent });
+  }
+
+  componentWillUnmount() {
+    // Stop watching to event, cant use callWeb3Async for some reason
+    this.state.newPostEvent.stopWatching((error) => { if (error) console.error(error); });
+    console.log('stopWatching');
   }
 
   render() {

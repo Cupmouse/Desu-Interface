@@ -9,6 +9,7 @@ import { propTypeBigNumber } from '../proptypes_util';
 
 import ViewController from '../layout/ViewController';
 import { callWeb3Async } from '../../web3integration';
+import getWeb3 from '../../web3integration';
 
 
 const fitText = (str) => {
@@ -66,32 +67,86 @@ export default class ThreadListView extends Component {
   componentWillMount() {
     const board = getBoardContractAt(this.props.match.params.boardAddress);
 
-    // Get addresses of threads in the board
-    callWeb3Async(board.getThreadArray.call, 0, 25).then((threadAddresses) => {
-      // Abandon unnecessary empty elements from responded array
-      const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
+    const updateList = () => {
+      let threadInstances;
 
-      return Promise.all(threadAddressesTrailed.map(async (threadAddress) => {
-        const thread = getThreadContractAt(threadAddress);
+      // Get addresses of threads in the board
+      callWeb3Async(board.getThreadArray.call, 0, 25).then((threadAddresses) => {
+        // Abandon unnecessary empty elements from responded array
+        const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
 
-        const title = await callWeb3Async(thread.getTitle.call);
-        const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
-        const text = await callWeb3Async(thread.getPostText.call, 0);
+        threadInstances = threadAddressesTrailed.map(address => getThreadContractAt(address));
 
+        return Promise.all(threadInstances.map(thread => callWeb3Async(thread.isAlive.call)));
+      }).then(isAliveArray => Promise.all(threadInstances.map(async (thread, index) => {
+        if (isAliveArray[index]) {
+          // Thread is alive
+          const title = await callWeb3Async(thread.getTitle.call);
+          const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
+          const text = await callWeb3Async(thread.getPostText.call, 0);
+
+          return {
+            address: thread.address,
+            title,
+            text,
+            numberOfPosts,
+          };
+        }
+
+        // Thread are removed, replace it with random thing
+        // Getting data of dead thread is going to throw nonsense error like
+        // bigNumber not a 16 number
         return {
-          address: threadAddress,
-          title,
-          text,
-          numberOfPosts,
+          address: thread.address,
+          title: 'にゃーん',
+          text: 'にゃーん',
+          numberOfPosts: new (getWeb3()).BigNumber(252525252525252525),
         };
-      }));
-    }).then((threads) => {
-      this.setState({ threads });
+      }))).then((threads) => {
+        this.setState({ threads });
+      });
+    };
+
+    const newThreadEvent = board.NewThread();
+
+    newThreadEvent.watch((error) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      console.log('new thread');
+
+      // Straight up update list
+      updateList();
     });
+
+    const threadBumpedEvent = board.ThreadBumped();
+
+    threadBumpedEvent.watch((error) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      console.log('thread bump');
+
+      // Straight up update list
+      updateList();
+    });
+
+    this.setState({ newThreadEvent, threadBumpedEvent });
+
+    updateList();
+  }
+
+  componentWillUnmount() {
+    this.state.newThreadEvent.stopWatching((error) => { if (error) console.error(error); });
+    this.state.threadBumpedEvent.stopWatching((error) => { if (error) console.error(error); });
+    console.log('stopWatching');
   }
 
   render() {
-    if (this.state == null) {
+    if (!this.state || typeof this.state.threads === 'undefined') {
       return ('loading...');
     }
 

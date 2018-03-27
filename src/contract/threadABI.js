@@ -102,6 +102,20 @@ export default [
   },
   {
     constant: true,
+    inputs: [],
+    name: 'isAlive',
+    outputs: [
+      {
+        name: '_alive',
+        type: 'bool',
+      },
+    ],
+    payable: false,
+    stateMutability: 'pure',
+    type: 'function',
+  },
+  {
+    constant: true,
     inputs: [
       {
         name: 'fromPostNumber',
@@ -247,6 +261,10 @@ export default [
     inputs: [
       {
         name: 'parentBoard',
+        type: 'address',
+      },
+      {
+        name: 'threadPoster',
         type: 'address',
       },
       {

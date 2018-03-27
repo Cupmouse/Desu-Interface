@@ -56,22 +56,24 @@ export const initWeb3 = async () => {
 
     // Copy global default account to local web3
     localWeb3.eth.defaultAccount = web3.eth.defaultAccount;
-
-    // Now update accounts
-    await updateAccountCache();
   } else {
     // If web3 is not prepared, make new and set provider
     localWeb3 = new Web3(new Web3.providers.HttpProvider(DEFAULT_PROVIDER_URL));
     isProvidedFromGlobal = false;
+  }
 
-    // Before setting accounts, update accounts cache
-    await updateAccountCache();
+  // Update accounts cache
+  await updateAccountCache();
 
+  // If attempts of getting default account failed, we just choose index 0 account if exist
+  if (localWeb3.eth.defaultAccount === undefined) {
     if (accountsCached.length > 0) {
       // Set default account from cached accounts at index 0
       [localWeb3.eth.defaultAccount] = accountsCached;
     }
+    // FIXME Restrict some functions if no account are not selected as default
   }
+
 
   // Get a list of accounts, updating it in interval of 5 secs
   setInterval(updateAccountCache, 5000);
