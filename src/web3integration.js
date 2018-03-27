@@ -5,6 +5,21 @@ const DEFAULT_PROVIDER_URL = 'http://localhost:8545';
 let localWeb3;
 let isProvidedFromGlobal;
 
+let accountsCached;
+
+// Update accounts cache to the latest one
+const updateAccountsCache = async () => {
+  if (!localWeb3) {
+    throw new Error('Web3 is not initialized');
+  }
+
+  accountsCached = await localWeb3.eth.accounts;
+};
+
+
+/* Public functions below */
+
+
 /**
  * Call this the very first to prepare provider connection!!!
  */
@@ -24,6 +39,10 @@ export const initWeb3 = () => {
     localWeb3 = new Web3(new Web3.providers.HttpProvider(DEFAULT_PROVIDER_URL));
     isProvidedFromGlobal = false;
   }
+
+  // Get a list of accounts, updating it in interval of 5 secs
+  setInterval(updateAccountsCache, 5000);
+  updateAccountsCache();
 };
 
 export const changeWeb3ProviderURL = (url) => {
@@ -36,6 +55,19 @@ export const changeWeb3ProviderURL = (url) => {
 
   // Change a provider of web3
   localWeb3 = new Web3(new Web3.providers.HttpProvider(url));
+};
+
+export const getListOfAccounts = async () => {
+  if (accountsCached === undefined) {
+    // Should fetch it from the server first
+    await updateAccountsCache();
+  }
+
+  return accountsCached;
+};
+
+export const makeNewThreadOn = async (boardAddress, title, text) => {
+
 };
 
 const getWeb3 = () => localWeb3;

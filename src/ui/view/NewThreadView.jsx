@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { getBoardContractAt } from '../../contract/contract_util';
+import { getListOfAccounts } from '../../web3integration';
 
 export default class NewThreadView extends Component {
   static get propTypes() {
@@ -31,27 +32,36 @@ export default class NewThreadView extends Component {
     // Stop browser from reloading
     event.preventDefault();
 
-    // Get contract manipulator
-    const board = getBoardContractAt(this.props.match.params.boardAddress);
+    getListOfAccounts().then((accounts) => {
+      console.log(accounts[0]);
+      // Get contract manipulator
+      const board = getBoardContractAt(this.props.match.params.boardAddress);
 
-    // Get estimation of gas cost
-    board.makeNewThread.estimateGas(this.state.title, this.state.text, (error, gasEstimate) => {
+      // Get estimation of gas cost
+      board.makeNewThread.estimateGas(this.state.title, this.state.text, (error, gasEstimate) => {
 
-      // Test if it generates error
-      board.makeNewThread.call(this.state.title, this.state.text, {gas: gasEstimate}, (error) => {
-        if (error) {
-          console.error(error);
-          return;
-        }
-
-        // Send actual contract
-        board.makeNewThread.send(this.state.title, this.state.text, (error2, txHash) => {
+        // Test if it generates error
+        board.makeNewThread.call(this.state.title, this.state.text, { from: accounts[0], gas: gasEstimate }, (error2) => {
           if (error2) {
             console.error(error2);
             return;
           }
 
-          console.log(txHash);
+          // Send actual contract
+          board.makeNewThread(this.state.title, this.state.text,
+            {
+              from: accounts[0],
+              gas: gasEstimate,
+            },
+            (error3, txHash) => {
+              if (error3) {
+                console.error(error3);
+                return;
+              }
+
+              console.log(txHash);
+            },
+          );
         });
       });
     });
@@ -68,7 +78,7 @@ export default class NewThreadView extends Component {
   render() {
     return (
       <div className="content">
-        <form className="new-thread-form" onSubmit={this.onSubmit}>
+        <form className="new-thread-form" onSubmit={(event) => {this.onSubmit(event)}}>
           <label className="new-thread-form-label">
             <span>Title:</span>
             <input
