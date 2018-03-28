@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 
 const DEFAULT_PROVIDER_URL = 'http://localhost:8545';
+export const GAS_ESTIMATION_MODIFIER = 1.1;
 
 let localWeb3;
 let isProvidedFromGlobal;
@@ -31,12 +32,14 @@ const updateAccountCache = async () => {
 
   accountsCached = await callWeb3Async(localWeb3.eth.getAccounts);
 
-  //
-  // if (accountSelected === undefined) {
-  //   localWeb3.
-  //
-  //   accountSelected = accountsCached[0];
-  // }
+  // If default account is undefined, we just choose index 0 account if exist
+  if (localWeb3.eth.defaultAccount === undefined) {
+    if (accountsCached.length > 0) {
+      // Set default account from cached accounts at index 0
+      [localWeb3.eth.defaultAccount] = accountsCached;
+    }
+    // FIXME Restrict some functions if no account are not selected as default
+  }
 };
 
 /* Public functions below */
@@ -65,20 +68,9 @@ export const initWeb3 = async () => {
   // Update accounts cache
   await updateAccountCache();
 
-  // If attempts of getting default account failed, we just choose index 0 account if exist
-  if (localWeb3.eth.defaultAccount === undefined) {
-    if (accountsCached.length > 0) {
-      // Set default account from cached accounts at index 0
-      [localWeb3.eth.defaultAccount] = accountsCached;
-    }
-    // FIXME Restrict some functions if no account are not selected as default
-  }
-
 
   // Get a list of accounts, updating it in interval of 5 secs
   setInterval(updateAccountCache, 5000);
-
-  console.log(localWeb3.eth.defaultAccount);
 };
 
 const getWeb3 = () => {
@@ -109,14 +101,5 @@ export const getListOfAccounts = async () => {
 
   return accountsCached;
 };
-//
-// export const getSelectedAccount = async () => {
-//   if (accountSelected === undefined) {
-//     accountSelected = web3.eth.defaultAccount;
-//   }
-//
-//
-//
-// };
 
 export default getWeb3;

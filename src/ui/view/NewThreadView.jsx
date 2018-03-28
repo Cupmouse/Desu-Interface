@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 
 import { getBoardContractAt } from '../../contract/contract_util';
-import { callWeb3Async } from '../../web3integration';
+import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../web3integration';
 import { genPathToBoard } from '../../pathgenerator';
 
 export default class NewThreadView extends Component {
@@ -54,7 +54,7 @@ export default class NewThreadView extends Component {
     })// Get the estimation of gas costs
       .then(() => callWeb3Async(board.makeNewThread.estimateGas, title, text))
       .then((result) => {
-        gasEstimate = result;
+        gasEstimate = Math.floor(result * GAS_ESTIMATION_MODIFIER);
 
         // Test if it generates error
         return callWeb3Async(board.makeNewThread.call, title, text, { gas: gasEstimate });

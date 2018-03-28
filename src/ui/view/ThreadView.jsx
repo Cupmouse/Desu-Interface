@@ -71,8 +71,6 @@ export default class ThreadView extends Component {
 
     // Number of posts are needed for fetching post's data
     callWeb3Async(thread.getNumberOfPosts).then((numberOfPosts) => {
-      console.log('got nop');
-
       // this.state.setState({ numberOfPosts: result });
 
       callWeb3Async(thread.getPosterArray, 0, numberOfPosts).then((postersResult) => {
@@ -122,16 +120,9 @@ export default class ThreadView extends Component {
 
       // Caught event! new post has been made now!
       const newPostsNumberBigNum = event.args.postNumber;
-      console.log('event catch');
 
       // Get post data and reflect it
-      thread.getPostAt.call(newPostsNumberBigNum, (error1, result) => {
-        console.log('post got for event call');
-        if (error1) {
-          console.error(error1);
-          return;
-        }
-
+      callWeb3Async(thread.getPostAt.call, newPostsNumberBigNum).then((result) => {
         const newPostsNumber = newPostsNumberBigNum.toNumber();
         const postsCopied = this.state.posts.slice();
 
@@ -153,11 +144,9 @@ export default class ThreadView extends Component {
   componentWillUnmount() {
     // Stop watching to event, cant use callWeb3Async for some reason
     this.state.newPostEvent.stopWatching((error) => { if (error) console.error(error); });
-    console.log('stopWatching');
   }
 
   render() {
-    console.log('rendering called');
     if (!this.state || typeof this.state.posts === 'undefined') {
       return ('loading');
     }

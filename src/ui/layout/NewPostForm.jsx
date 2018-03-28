@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { getThreadContractAt } from '../../contract/contract_util';
-import { callWeb3Async } from '../../web3integration';
+import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../web3integration';
 
 export default class NewPostForm extends Component {
   static get propTypes() {
@@ -35,7 +35,7 @@ export default class NewPostForm extends Component {
 
     let gasEstimate;
     callWeb3Async(thread.post.estimateGas, newPostText).then((result) => {
-      gasEstimate = result;
+      gasEstimate = Math.floor(result * GAS_ESTIMATION_MODIFIER);
 
       // Test if it can run without problems on vm
       return callWeb3Async(thread.post.call, newPostText);

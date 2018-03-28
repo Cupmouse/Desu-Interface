@@ -8,8 +8,7 @@ import { genPathToThread, genPathToNewThread } from '../../pathgenerator';
 import { propTypeBigNumber } from '../proptypes_util';
 
 import ViewController from '../layout/ViewController';
-import { callWeb3Async } from '../../web3integration';
-import getWeb3 from '../../web3integration';
+import getWeb3, { callWeb3Async } from '../../web3integration';
 
 
 const fitText = (str) => {
@@ -115,8 +114,6 @@ export default class ThreadListView extends Component {
         return;
       }
 
-      console.log('new thread');
-
       // Straight up update list
       updateList();
     });
@@ -128,9 +125,6 @@ export default class ThreadListView extends Component {
         console.error(error);
         return;
       }
-      console.log('thread bump');
-
-      // Straight up update list
       updateList();
     });
 
@@ -142,7 +136,6 @@ export default class ThreadListView extends Component {
   componentWillUnmount() {
     this.state.newThreadEvent.stopWatching((error) => { if (error) console.error(error); });
     this.state.threadBumpedEvent.stopWatching((error) => { if (error) console.error(error); });
-    console.log('stopWatching');
   }
 
   render() {
