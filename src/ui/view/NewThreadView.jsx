@@ -42,12 +42,14 @@ export default class NewThreadView extends Component {
     // This is the same as title = this.state.title, text = this.state.text
     const { title, text } = this.state;
 
-    // Get contract manipulator
-    const board = getBoardContractAt(this.props.match.params.boardAddress);
-
+    let board;
     let gasEstimate;
 
-    callWeb3Async(board.isAlive.call).then((isAlive) => {
+    // Get contract manipulator
+    getBoardContractAt(this.props.match.params.boardAddress).then((result) => {
+      board = result;
+      return callWeb3Async(board.isAlive.call);
+    }).then((isAlive) => {
       if (isAlive === false) {
         throw new Error('Board contract is dead (selfdestructed) aborting operation');
       }

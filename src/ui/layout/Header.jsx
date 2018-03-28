@@ -7,7 +7,7 @@ import AccountStatus from './AccountStatus';
 const Header = () => (
   <header className="app-header">
     <nav>
-      <Link to={genPathToBoard('0x00a1ab1c8f0f92a3b16c285793e89c60b5efafb8')}>Threads</Link>
+      <Link to={genPathToBoard('0x6bcd051dac34a5f32b4de06909baac04ee448920')}>Threads</Link>
     </nav>
     <AccountStatus />
   </header>

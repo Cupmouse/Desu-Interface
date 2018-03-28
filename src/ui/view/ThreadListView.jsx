@@ -64,51 +64,58 @@ export default class ThreadListView extends Component {
   }
 
   componentWillMount() {
-    const board = getBoardContractAt(this.props.match.params.boardAddress);
+    let boardCached;
+
+    const getBoard = async () => {
+      if (boardCached === undefined) {
+        return getBoardContractAt(this.props.match.params.boardAddress);
+      }
+
+      return boardCached;
+    };
 
     const updateList = () => {
       let threadInstances;
 
       // Get addresses of threads in the board
-      callWeb3Async(board.getThreadArray.call, 0, 25).then((threadAddresses) => {
-        // Abandon unnecessary empty elements from responded array
-        const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
+      getBoard()
+        .then(board => callWeb3Async(board.getThreadArray.call, 0, 25))
+        .then((threadAddresses) => {
+          // Abandon unnecessary empty elements from responded array
+          const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
 
-        threadInstances = threadAddressesTrailed.map(address => getThreadContractAt(address));
+          threadInstances = threadAddressesTrailed.map(address => getThreadContractAt(address));
 
-        return Promise.all(threadInstances.map(thread => callWeb3Async(thread.isAlive.call)));
-      }).then(isAliveArray => Promise.all(threadInstances.map(async (thread, index) => {
-        if (isAliveArray[index]) {
-          // Thread is alive
-          const title = await callWeb3Async(thread.getTitle.call);
-          const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
-          const text = await callWeb3Async(thread.getPostText.call, 0);
+          return Promise.all(threadInstances.map(thread => callWeb3Async(thread.isAlive.call)));
+        }).then(isAliveArray => Promise.all(threadInstances.map(async (thread, index) => {
+          if (isAliveArray[index]) {
+            // Thread is alive
+            const title = await callWeb3Async(thread.getTitle.call);
+            const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
+            const text = await callWeb3Async(thread.getPostText.call, 0);
 
+            return {
+              address: thread.address,
+              title,
+              text,
+              numberOfPosts,
+            };
+          }
+
+          // Thread are removed, replace it with random thing
+          // Getting data of dead thread is going to throw nonsense error like
+          // bigNumber not a 16 number
           return {
             address: thread.address,
-            title,
-            text,
-            numberOfPosts,
+            title: 'にゃーん',
+            text: 'にゃーん',
+            numberOfPosts: new (getWeb3()).BigNumber(252525252525252525),
           };
-        }
-
-        // Thread are removed, replace it with random thing
-        // Getting data of dead thread is going to throw nonsense error like
-        // bigNumber not a 16 number
-        return {
-          address: thread.address,
-          title: 'にゃーん',
-          text: 'にゃーん',
-          numberOfPosts: new (getWeb3()).BigNumber(252525252525252525),
-        };
-      }))).then((threads) => {
-        this.setState({ threads });
-      });
+        })))
+        .then((threads) => { this.setState({ threads }); });
     };
 
-    const newThreadEvent = board.NewThread();
-
-    newThreadEvent.watch((error) => {
+    const watchCallback = (error) => {
       if (error) {
         console.error(error);
         return;
@@ -116,26 +123,28 @@ export default class ThreadListView extends Component {
 
       // Straight up update list
       updateList();
+    };
+
+    getBoard().then((board) => {
+      const newThreadEvent = board.NewThread();
+      newThreadEvent.watch(watchCallback);
+
+      const threadBumpedEvent = board.ThreadBumped();
+      threadBumpedEvent.watch(watchCallback);
+
+      this.setState({ newThreadEvent, threadBumpedEvent });
     });
-
-    const threadBumpedEvent = board.ThreadBumped();
-
-    threadBumpedEvent.watch((error) => {
-      if (error) {
-        console.error(error);
-        return;
-      }
-      updateList();
-    });
-
-    this.setState({ newThreadEvent, threadBumpedEvent });
 
     updateList();
   }
 
   componentWillUnmount() {
-    this.state.newThreadEvent.stopWatching((error) => { if (error) console.error(error); });
-    this.state.threadBumpedEvent.stopWatching((error) => { if (error) console.error(error); });
+    if (typeof this.state.newThreadEvent !== 'undefined') {
+      this.state.newThreadEvent.stopWatching((error) => { if (error) console.error(error); });
+    }
+    if (typeof this.state.threadBumpedEvent !== 'undefined') {
+      this.state.threadBumpedEvent.stopWatching((error) => { if (error) console.error(error); });
+    }
   }
 
   render() {
