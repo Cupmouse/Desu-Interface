@@ -38,34 +38,11 @@ export default [
     constant: false,
     inputs: [
       {
-        name: 'index',
-        type: 'uint256',
-      },
-    ],
-    name: 'detachThreadByIndex',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      {
         name: 'internalId',
         type: 'uint256',
       },
     ],
     name: 'detachThreadByInternalId',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [],
-    name: 'lock',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
@@ -90,15 +67,14 @@ export default [
     type: 'function',
   },
   {
-    anonymous: false,
-    inputs: [],
-    name: 'ThreadDetached',
-    type: 'event',
-  },
-  {
     constant: false,
-    inputs: [],
-    name: 'unlock',
+    inputs: [
+      {
+        name: 'lockState',
+        type: 'bool',
+      },
+    ],
+    name: 'setLock',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
@@ -107,7 +83,7 @@ export default [
   {
     anonymous: false,
     inputs: [],
-    name: 'ThreadBumped',
+    name: 'ThreadDetached',
     type: 'event',
   },
   {
@@ -115,6 +91,12 @@ export default [
     payable: false,
     stateMutability: 'nonpayable',
     type: 'constructor',
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: 'ThreadBumped',
+    type: 'event',
   },
   {
     constant: true,
@@ -235,20 +217,6 @@ export default [
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'isAlive',
-    outputs: [
-      {
-        name: '_alive',
-        type: 'bool',
-      },
-    ],
-    payable: false,
-    stateMutability: 'pure',
     type: 'function',
   },
   {

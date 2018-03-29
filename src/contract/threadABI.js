@@ -102,20 +102,6 @@ export default [
   },
   {
     constant: true,
-    inputs: [],
-    name: 'isAlive',
-    outputs: [
-      {
-        name: '_alive',
-        type: 'bool',
-      },
-    ],
-    payable: false,
-    stateMutability: 'pure',
-    type: 'function',
-  },
-  {
-    constant: true,
     inputs: [
       {
         name: 'fromPostNumber',
@@ -260,7 +246,7 @@ export default [
   {
     inputs: [
       {
-        name: 'parentBoard',
+        name: '_parentBoard',
         type: 'address',
       },
       {
@@ -295,11 +281,6 @@ export default [
   {
     anonymous: false,
     inputs: [
-      {
-        indexed: false,
-        name: 'poster',
-        type: 'address',
-      },
       {
         indexed: false,
         name: 'postNumber',

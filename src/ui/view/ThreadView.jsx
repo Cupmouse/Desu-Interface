@@ -36,6 +36,13 @@ export default class ThreadView extends Component {
     };
   }
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      newPostEvent: null,
+    };
+  }
+
   componentWillMount() {
     const thread = getThreadContractAt(this.props.match.params.threadAddress);
 
@@ -142,8 +149,10 @@ export default class ThreadView extends Component {
   }
 
   componentWillUnmount() {
-    // Stop watching to event, cant use callWeb3Async for some reason
-    this.state.newPostEvent.stopWatching((error) => { if (error) console.error(error); });
+    if (this.state.newPostEvent !== null) {
+      // Stop watching to event, cant use callWeb3Async for some reason
+      this.state.newPostEvent.stopWatching((error) => { if (error) console.error(error); });
+    }
   }
 
   render() {

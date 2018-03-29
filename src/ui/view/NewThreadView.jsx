@@ -48,11 +48,6 @@ export default class NewThreadView extends Component {
     // Get contract manipulator
     getBoardContractAt(this.props.match.params.boardAddress).then((result) => {
       board = result;
-      return callWeb3Async(board.isAlive.call);
-    }).then((isAlive) => {
-      if (isAlive === false) {
-        throw new Error('Board contract is dead (selfdestructed) aborting operation');
-      }
     })// Get the estimation of gas costs
       .then(() => callWeb3Async(board.makeNewThread.estimateGas, title, text))
       .then((result) => {

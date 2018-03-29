@@ -48,18 +48,17 @@ export default class ThreadListView extends Component {
   constructor(props) {
     super(props);
 
+    this.state = {
+      newThreadEvent: null,
+      threadBumpedEvent: null,
+    };
+
     this.controllerElements = {
       newThread: {
         link: genPathToNewThread(props.match.params.boardAddress),
         icon: faPlus,
         text: 'New Thread',
       },
-      // admin: {
-      //   text: 'Thread settings',
-      //   pressed: () => {
-      //
-      //   },
-      // },
     };
   }
 
@@ -86,9 +85,10 @@ export default class ThreadListView extends Component {
 
           threadInstances = threadAddressesTrailed.map(address => getThreadContractAt(address));
 
-          return Promise.all(threadInstances.map(thread => callWeb3Async(thread.isAlive.call)));
-        }).then(isAliveArray => Promise.all(threadInstances.map(async (thread, index) => {
-          if (isAliveArray[index]) {
+          return Promise.all(threadAddressesTrailed.map(async threadAddress =>
+            await callWeb3Async(getWeb3().eth.getCode, threadAddress) === '0x'));
+        }).then(isDeadArray => Promise.all(threadInstances.map(async (thread, index) => {
+          if (!isDeadArray[index]) {
             // Thread is alive
             const title = await callWeb3Async(thread.getTitle.call);
             const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
@@ -109,7 +109,7 @@ export default class ThreadListView extends Component {
             address: thread.address,
             title: 'にゃーん',
             text: 'にゃーん',
-            numberOfPosts: new (getWeb3()).BigNumber(252525252525252525),
+            numberOfPosts: new (getWeb3()).BigNumber(25252525252525),
           };
         })))
         .then((threads) => { this.setState({ threads }); });
@@ -139,10 +139,10 @@ export default class ThreadListView extends Component {
   }
 
   componentWillUnmount() {
-    if (typeof this.state.newThreadEvent !== 'undefined') {
+    if (this.state.newThreadEvent !== null) {
       this.state.newThreadEvent.stopWatching((error) => { if (error) console.error(error); });
     }
-    if (typeof this.state.threadBumpedEvent !== 'undefined') {
+    if (this.state.threadBumpedEvent !== null) {
       this.state.threadBumpedEvent.stopWatching((error) => { if (error) console.error(error); });
     }
   }
