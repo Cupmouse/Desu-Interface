@@ -14,6 +14,7 @@ export default class NewThreadView extends Component {
           boardAddress: PropTypes.string.isRequired,
         }).isRequired,
       }).isRequired,
+      notificationSystem: PropTypes.func.isRequired,
     };
   }
 
@@ -57,7 +58,18 @@ export default class NewThreadView extends Component {
         return callWeb3Async(board.makeNewThread.call, title, text, { gas: gasEstimate });
       })
       .then(() => callWeb3Async(board.makeNewThread, title, text, { gas: gasEstimate }))
-      .then(() => { this.setState({ redirect: true }); });
+      .then(() => {
+        this.setState({ redirect: true });
+
+        const notif = {
+          title: 'New thread tx sent',
+          message: 'Your tx was sent to the node',
+          level: 'success',
+          position: 'bl',
+        };
+
+        this.props.route.notificationSystem.addNotification(notif);
+      });
   }
 
   onTitleChange(event) {

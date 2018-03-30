@@ -68,7 +68,6 @@ export const initWeb3 = async () => {
   // Update accounts cache
   await updateAccountCache();
 
-
   // Get a list of accounts, updating it in interval of 5 secs
   setInterval(updateAccountCache, 5000);
 };

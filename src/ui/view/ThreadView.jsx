@@ -33,6 +33,7 @@ export default class ThreadView extends Component {
           goal: PropTypes.string,
         }).isRequired,
       }).isRequired,
+      notificationSystem: PropTypes.func.isRequired,
     };
   }
 
@@ -181,7 +182,10 @@ export default class ThreadView extends Component {
               />);
             })}
           </div>
-          <NewPostForm threadAddress={this.props.match.params.threadAddress} />
+          <NewPostForm
+            threadAddress={this.props.match.params.threadAddress}
+            notificationSystem={this.props.notificationSystem}
+          />
         </div>
       </div>
     );
