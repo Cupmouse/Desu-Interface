@@ -47,10 +47,12 @@ export default class NewThreadView extends Component {
     let gasEstimate;
 
     // Get contract manipulator
-    getBoardContractAt(this.props.match.params.boardAddress).then((result) => {
-      board = result;
-    })// Get the estimation of gas costs
-      .then(() => callWeb3Async(board.makeNewThread.estimateGas, title, text))
+    getBoardContractAt(this.props.match.params.boardAddress)
+      .then((result) => {
+        board = result;
+        // Get the estimation of gas costs
+        return callWeb3Async(board.makeNewThread.estimateGas, title, text);
+      })
       .then((result) => {
         gasEstimate = Math.floor(result * GAS_ESTIMATION_MODIFIER);
 
@@ -58,18 +60,43 @@ export default class NewThreadView extends Component {
         return callWeb3Async(board.makeNewThread.call, title, text, { gas: gasEstimate });
       })
       .then(() => callWeb3Async(board.makeNewThread, title, text, { gas: gasEstimate }))
-      .then(() => {
-        this.setState({ redirect: true });
+      .then(
+        () => {
+          this.setState({ redirect: true });
 
-        const notif = {
-          title: 'New thread tx sent',
-          message: 'Your tx was sent to the node',
-          level: 'success',
-          position: 'bl',
-        };
+          const notif = {
+            title: 'New thread tx sent',
+            message: 'Your tx was sent to the node',
+            level: 'success',
+            position: 'bl',
+          };
 
-        this.props.route.notificationSystem.addNotification(notif);
-      });
+          this.props.notificationSystem().addNotification(notif);
+        },
+        (error) => {
+          const notif = {
+            title: 'Error occurred',
+            level: 'error',
+            position: 'br',
+          };
+
+          if (error.message === 'authentication needed: password or unlock') {
+            notif.message = 'You need to unlock your account';
+          } else if (error.message === 'gas required exceeds allowance or always failing transaction') {
+            notif.message = 'Something went wrong. Are your thread\'s title and text are valid?';
+          } else {
+            notif.message = 'Could not send tx, see console to see more info';
+          }
+
+          // Popup a notification
+          this.props.notificationSystem().addNotification(notif);
+
+          // Unfreeze controls
+          this.setState({ processing: false });
+
+          return Promise.reject(error);
+        },
+      );
   }
 
   onTitleChange(event) {
@@ -102,7 +129,12 @@ export default class NewThreadView extends Component {
               disabled={this.state.processing}
             />
           </label>
-          <input id="text-textarea" type="submit" value="Submit" disabled={this.state.processing} />
+          <input
+            id="text-textarea"
+            type="submit"
+            value="Submit"
+            disabled={this.state.processing}
+          />
         </form>
         {this.state.redirect ? (<Redirect to={genPathToBoard(this.props.match.params.boardAddress)} push />) : ''}
       </div>

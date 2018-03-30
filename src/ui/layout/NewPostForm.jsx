@@ -35,22 +35,6 @@ export default class NewPostForm extends Component {
     // ESLint says use array destruct, it is disgusting but keep this please
     const { newPostText } = this.state;
 
-    // Showing an error message and unfreeze submit button
-    const errorCatcher = (error, message) => {
-      console.error(error);
-
-      const notif = {
-        title: 'Error occurred',
-        message,
-        level: 'error',
-        position: 'br',
-      };
-
-      this.props.notificationSystem().addNotification(notif);
-
-      this.setState({ sendingTx: false });
-    };
-
     let gasEstimate;
     callWeb3Async(thread.post.estimateGas, newPostText)
       .then((result) => {
@@ -58,43 +42,53 @@ export default class NewPostForm extends Component {
 
         // Test if it can run without problems on vm
         return callWeb3Async(thread.post.call, newPostText);
-      }, (error) => {
-        errorCatcher(error, 'Could not estimate gas');
       })
+      .then(() =>
+        // It can, send real tx
+        callWeb3Async(thread.post, newPostText, {
+          // from: account,
+          gas: gasEstimate,
+        }))
       .then(
-        () =>
-          // It can, send real tx
-          callWeb3Async(thread.post, newPostText, {
-            // from: account,
-            gas: gasEstimate,
-          })
-        , (error) => {
-          errorCatcher(error, 'Tx simulation failed');
+        () => {
+          // Transaction was accepted
+
+          const notif = {
+            title: 'New post tx sent',
+            message: 'Your tx was sent to the node',
+            level: 'success',
+            position: 'br',
+          };
+
+          this.props.notificationSystem().addNotification(notif);
+
+          // Set textarea blank
+          this.setState({ newPostText: '' });
         },
-      )
-      .then(() => {
-        // Transaction was accepted
+        (error) => {
+          // Sending tx was failed
 
-        const notif = {
-          title: 'New post tx sent',
-          message: 'Your tx was sent to the node',
-          level: 'success',
-          position: 'br',
-        };
+          const notif = {
+            title: 'Error occurred',
+            level: 'error',
+            position: 'br',
+          };
 
-        this.props.notificationSystem().addNotification(notif);
+          if (error.message === 'authentication needed: password or unlock') {
+            notif.message = 'You need to unlock your account';
+          } else if (error.message === 'gas required exceeds allowance or always failing transaction') {
+            notif.message = 'Something went wrong. Is your post\'s text are valid?';
+          } else {
+            notif.message = 'Could not send tx, see console to see more info';
+          }
 
-        // Set textarea blank
-        this.setState({ newPostText: '' });
-      }, (error) => {
-        // Sending tx was failed
+          this.props.notificationSystem().addNotification(notif);
 
-        if (error.message === 'authentication needed: password or unlock') {
-          errorCatcher(error, 'You need to unlock your account');
-        } else {
-          errorCatcher(error, 'Could not send tx, see console to see more info');
-        }
-      });
+          this.setState({ sendingTx: false });
+
+          return Promise.reject(error);
+        },
+      );
 
     this.setState({ sendingTx: true });
   }
