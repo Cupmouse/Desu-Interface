@@ -84,12 +84,8 @@ export default class ThreadListView extends Component {
           const threadAddressesTrailed = threadAddresses[0].slice(0, threadAddresses[1]);
 
           threadInstances = threadAddressesTrailed.map(address => getThreadContractAt(address));
-
-          return Promise.all(threadAddressesTrailed.map(async threadAddress =>
-            await callWeb3Async(getWeb3().eth.getCode, threadAddress) === '0x'));
-        }).then(isDeadArray => Promise.all(threadInstances.map(async (thread, index) => {
-          if (!isDeadArray[index]) {
-            // Thread is alive
+        }).then(() => Promise.all(threadInstances.map(async (thread) => {
+          try {
             const title = await callWeb3Async(thread.getTitle.call);
             const numberOfPosts = await callWeb3Async(thread.getNumberOfPosts.call);
             const text = await callWeb3Async(thread.getPostText.call, 0);
@@ -100,17 +96,30 @@ export default class ThreadListView extends Component {
               text,
               numberOfPosts,
             };
-          }
+          } catch (error) {
+            if (error.message === 'new BigNumber() not a base 16 number: ') {
+              // Thread are removed, replace it with random thing
+              // Getting data of dead thread is going to throw nonsense error like
+              // bigNumber not a 16 number
+              return {
+                address: thread.address,
+                title: 'にゃーん',
+                text: 'にゃーん',
+                numberOfPosts: new (getWeb3()).BigNumber(-2222),
+              };
+            }
 
-          // Thread are removed, replace it with random thing
-          // Getting data of dead thread is going to throw nonsense error like
-          // bigNumber not a 16 number
-          return {
-            address: thread.address,
-            title: 'にゃーん',
-            text: 'にゃーん',
-            numberOfPosts: new (getWeb3()).BigNumber(25252525252525),
-          };
+            // Show error other than an error above
+
+            console.error(error);
+
+            return {
+              address: thread.address,
+              title: 'えらー',
+              text: 'えらー',
+              numberOfPosts: new (getWeb3()).BigNumber(-1),
+            };
+          }
         })))
         .then((threads) => { this.setState({ threads }); });
     };
