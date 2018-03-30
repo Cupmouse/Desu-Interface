@@ -2,4 +2,8 @@
 /yarn-error.log
 
 # Node.js stuff
-node_modules
+/node_modules
+
+# Built code stuff
+/public/js/bundled.js
+
