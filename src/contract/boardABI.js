@@ -1,40 +1,5 @@
 export default [
   {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        name: 'poster',
-        type: 'address',
-      },
-      {
-        indexed: false,
-        name: 'thread',
-        type: 'address',
-      },
-    ],
-    name: 'NewThread',
-    type: 'event',
-  },
-  {
-    constant: false,
-    inputs: [],
-    name: 'bumpThread',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [],
-    name: 'destructBoard',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     constant: false,
     inputs: [
       {
@@ -50,99 +15,11 @@ export default [
   },
   {
     constant: false,
-    inputs: [
-      {
-        name: 'title',
-        type: 'string',
-      },
-      {
-        name: 'text',
-        type: 'string',
-      },
-    ],
-    name: 'makeNewThread',
+    inputs: [],
+    name: 'destructBoard',
     outputs: [],
     payable: false,
     stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        name: 'lockState',
-        type: 'bool',
-      },
-    ],
-    name: 'setLock',
-    outputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    anonymous: false,
-    inputs: [],
-    name: 'ThreadDetached',
-    type: 'event',
-  },
-  {
-    inputs: [],
-    payable: false,
-    stateMutability: 'nonpayable',
-    type: 'constructor',
-  },
-  {
-    anonymous: false,
-    inputs: [],
-    name: 'ThreadBumped',
-    type: 'event',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getFirstThread',
-    outputs: [
-      {
-        name: 'thread',
-        type: 'address',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [
-      {
-        name: 'index',
-        type: 'uint256',
-      },
-    ],
-    name: 'getInternalIdOfIndex',
-    outputs: [
-      {
-        name: 'internalId',
-        type: 'uint256',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getLastThread',
-    outputs: [
-      {
-        name: 'thread',
-        type: 'address',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
     type: 'function',
   },
   {
@@ -153,20 +30,6 @@ export default [
       {
         name: 'numberOfThreads',
         type: 'uint256',
-      },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getOwner',
-    outputs: [
-      {
-        name: '_owner',
-        type: 'address',
       },
     ],
     payable: false,
@@ -201,17 +64,35 @@ export default [
     type: 'function',
   },
   {
-    constant: true,
+    constant: false,
+    inputs: [],
+    name: 'bumpThread',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: false,
     inputs: [
       {
-        name: 'index',
-        type: 'uint256',
+        name: 'lockState',
+        type: 'bool',
       },
     ],
-    name: 'getThreadAt',
+    name: 'setLock',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'getOwner',
     outputs: [
       {
-        name: 'thread',
+        name: '_owner',
         type: 'address',
       },
     ],
@@ -232,5 +113,85 @@ export default [
     payable: false,
     stateMutability: 'view',
     type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        name: 'index',
+        type: 'uint256',
+      },
+    ],
+    name: 'getThreadAt',
+    outputs: [
+      {
+        name: 'thread',
+        type: 'address',
+      },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        name: 'index',
+        type: 'uint256',
+      },
+    ],
+    name: 'getInternalIdOfIndex',
+    outputs: [
+      {
+        name: 'internalId',
+        type: 'uint256',
+      },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      {
+        name: 'title',
+        type: 'string',
+      },
+      {
+        name: 'text',
+        type: 'string',
+      },
+    ],
+    name: 'makeNewThread',
+    outputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: 'ThreadDetached',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: 'ThreadBumped',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [],
+    name: 'NewThread',
+    type: 'event',
   },
 ];
