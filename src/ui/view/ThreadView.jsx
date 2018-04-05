@@ -6,7 +6,7 @@ import { getThreadContractAt } from '../../contract/contract_util';
 import { formatBigNumberTimestamp } from '../human_readable_util';
 import { propTypeBigNumber } from '../proptypes_util';
 
-import NewPostForm from '../layout/NewPostForm';
+import NewPostForm from './NewPostForm';
 
 
 const Post = props => (

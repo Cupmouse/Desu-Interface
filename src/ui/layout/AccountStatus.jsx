@@ -10,6 +10,7 @@ export default class AccountStatus extends Component {
     return (
       <div>
         <span>{this.state.defaultAccount}</span>
+        <input type="button" value="Settings" />
       </div>
     );
   }

@@ -7,7 +7,7 @@ import { getBoardContractAt, getThreadContractAt } from '../../contract/contract
 import { genPathToThread, genPathToNewThread } from '../../pathgenerator';
 import { propTypeBigNumber } from '../proptypes_util';
 
-import ViewController from '../layout/ViewController';
+import ViewController from './ViewController';
 import getWeb3, { callWeb3Async } from '../../web3integration';
 
 
