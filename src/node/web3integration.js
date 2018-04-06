@@ -8,8 +8,6 @@ let isProvidedFromGlobal;
 
 let accountsCached;
 
-// let accountSelected;
-
 export const callWeb3Async = (func, ...args) => new Promise((resolve, reject) => {
   const argsCopied = args.slice();
 

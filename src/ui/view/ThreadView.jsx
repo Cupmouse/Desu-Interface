@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import getWeb3, { callWeb3Async } from '../../web3integration';
+import getWeb3, { callWeb3Async } from '../../node/web3integration';
 import { getThreadContractAt } from '../../contract/contract_util';
 import { formatBigNumberTimestamp } from '../human_readable_util';
 import { propTypeBigNumber } from '../proptypes_util';

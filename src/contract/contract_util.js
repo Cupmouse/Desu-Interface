@@ -1,7 +1,7 @@
 import threadABI from './threadABI';
 import boardABI from './boardABI';
 
-import getWeb3, { callWeb3Async } from '../web3integration';
+import getWeb3, { callWeb3Async } from '../node/web3integration';
 import boardByteCode from './boardByteCode';
 
 export const getThreadContractAt = threadAddress =>

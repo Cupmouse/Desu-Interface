@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import { getThreadContractAt } from '../../contract/contract_util';
-import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../web3integration';
+import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../node/web3integration';
 
 export default class NewPostForm extends Component {
   static get propTypes() {

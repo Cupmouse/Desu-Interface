@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import getWeb3 from '../../web3integration';
+import getWeb3 from '../../node/web3integration';
 
 export default class AccountStatus extends Component {
   componentWillMount() {

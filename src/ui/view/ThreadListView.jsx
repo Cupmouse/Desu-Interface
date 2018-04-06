@@ -8,7 +8,7 @@ import { genPathToThread, genPathToNewThread } from '../../pathgenerator';
 import { propTypeBigNumber } from '../proptypes_util';
 
 import ViewController from './ViewController';
-import getWeb3, { callWeb3Async } from '../../web3integration';
+import getWeb3, { callWeb3Async } from '../../node/web3integration';
 
 
 const fitText = (str) => {

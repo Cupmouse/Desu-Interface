@@ -5,7 +5,7 @@ import FontAwesomeIcon from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid';
 import NotificationSystem from 'react-notification-system';
 
-import { initWeb3 } from '../web3integration';
+import { initWeb3 } from '../node/web3integration';
 
 import '../less/main.less';
 import Header from './layout/Header';

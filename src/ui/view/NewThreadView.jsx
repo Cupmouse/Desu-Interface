@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 
 import { getBoardContractAt } from '../../contract/contract_util';
-import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../web3integration';
+import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../node/web3integration';
 import { genPathToBoard } from '../../pathgenerator';
 
 export default class NewThreadView extends Component {
