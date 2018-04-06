@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Redirect } from 'react-router-dom';
 
 import { getBoardContractAt } from '../../contract/contract_util';
-import { callWeb3Async, GAS_ESTIMATION_MODIFIER } from '../../node/web3integration';
+import { callWeb3Async, GAS_ESTIMATION_MODIFIER, getAppropriateGasPrice } from '../../node/web3integration';
 import { genPathToBoard } from '../../pathgenerator';
 
 export default class NewThreadView extends Component {
@@ -57,12 +57,18 @@ export default class NewThreadView extends Component {
         gasEstimate = Math.floor(result * GAS_ESTIMATION_MODIFIER);
 
         // Test if it generates error
-        return callWeb3Async(board.makeNewThread.call, title, text, { gas: gasEstimate });
+        return callWeb3Async(board.makeNewThread.call, title, text, {
+          gas: gasEstimate,
+          gasPrice: getAppropriateGasPrice(),
+        });
       })
-      .then(() => callWeb3Async(board.makeNewThread, title, text, { gas: gasEstimate }))
+      .then(() => callWeb3Async(board.makeNewThread, title, text, {
+        gas: gasEstimate,
+        gasPrice: getAppropriateGasPrice(),
+      }))
       .then(
         () => {
-          this.setState({ redirect: true });
+          this.setState({redirect: true});
 
           const notif = {
             title: 'New thread tx sent',
@@ -85,16 +91,16 @@ export default class NewThreadView extends Component {
           } else if (error.message === 'gas required exceeds allowance or always failing transaction') {
             notif.message = 'Something went wrong. Are your thread\'s title and text are valid?';
           } else {
-            notif.message = 'Could not send tx, see console to see more info';
+            notif.message = 'Could not send tx, see console for more info';
           }
 
           // Popup a notification
           this.props.notificationSystem().addNotification(notif);
 
           // Unfreeze controls
-          this.setState({ processing: false });
+          this.setState({processing: false});
 
-          return Promise.reject(error);
+          console.error(error);
         },
       );
   }

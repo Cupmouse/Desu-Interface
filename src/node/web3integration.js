@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 
-const DEFAULT_PROVIDER_URL = 'http://localhost:8545';
+const DEFAULT_PROVIDER_URL = 'http://localhost:8293';
 export const GAS_ESTIMATION_MODIFIER = 1.1;
 
 let localWeb3;
@@ -50,17 +50,21 @@ export const initWeb3 = async () => {
     throw new Error('Web3 already have been initialized');
   }
 
-  if (typeof web3 !== 'undefined') {
+  if (window.nukomask && window.nukomask.web3) {
     // Use provided one
-    localWeb3 = new Web3(web3.currentProvider);
+    localWeb3 = new Web3(window.nukomask.web3.currentProvider);
     isProvidedFromGlobal = true;
 
     // Copy global default account to local web3
-    localWeb3.eth.defaultAccount = web3.eth.defaultAccount;
+    localWeb3.eth.defaultAccount = window.nukomask.web3.eth.defaultAccount;
+
+    console.debug('Using injected web3');
   } else {
     // If web3 is not prepared, make new and set provider
     localWeb3 = new Web3(new Web3.providers.HttpProvider(DEFAULT_PROVIDER_URL));
     isProvidedFromGlobal = false;
+
+    console.debug('Using node');
   }
 
   // Update accounts cache
@@ -77,6 +81,8 @@ const getWeb3 = () => {
 
   return localWeb3;
 };
+
+export default getWeb3;
 
 export const changeWeb3ProviderURL = (url) => {
   if (typeof localWeb3 === 'undefined') {
@@ -99,4 +105,6 @@ export const getListOfAccounts = async () => {
   return accountsCached;
 };
 
-export default getWeb3;
+
+export const getAppropriateGasPrice = () => 100000;
+

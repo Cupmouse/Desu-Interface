@@ -109,19 +109,17 @@ export default class ThreadListView extends Component {
               };
             }
 
-            // Show error other than an error above
-
-            console.error(error);
-
-            return {
-              address: thread.address,
-              title: 'えらー',
-              text: 'えらー',
-              numberOfPosts: new (getWeb3()).BigNumber(-1),
-            };
+            // Throw error to higher level
+            throw error;
           }
         })))
-        .then((threads) => { this.setState({ threads }); });
+        .then(
+          (threads) => { this.setState({ threads }); },
+          (error) => {
+            // Show error
+            console.error(error);
+          },
+        );
     };
 
     const watchCallback = (error) => {
